@@ -1,0 +1,181 @@
+﻿@model QLessViewModel;
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="table-responsive">
+    <table id="tblCards" class="table table-hover">
+      <thead class="custom-thead">
+        <tr>
+          <th scope="col">Card#</th>
+          <th scope="col">Card Type</th>
+          <th scope="col">Expiry Date</th>
+          <th scope="col">Remaining Balance</th>
+          <th scope="col" title="Simulate card being used.">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach(var card in Model.TransportCards)
+        {
+            var isDisabled = card.ExpiryDate < DateTime.UtcNow;
+            <tr>
+              <th class="transportCardId" scope="row">@card.TransportCardId</th>
+              <td class="transportCardType">@(String.IsNullOrWhiteSpace(card.PWDIDNumber) && String.IsNullOrWhiteSpace(card.SeniorCitizenNumber) ? "Normal" : Html.Raw("<a href='#' class='discounted'>Discounted</a>"))</td>
+              <td><a href="#" class="history" data-transportCardId="@card.TransportCardId" title="View transaction history">@card.ExpiryDate</a></td>
+              <td class="remainingBalance" scope="col">₱ @card.Balance.ToString("0.####")</td>
+              <td>
+                  <button class="btn btn-primary simulate_use" title="Simulate card being used." @(isDisabled ? "disabled" : "")>Use</button>
+                  <button class="btn btn-primary reload" title="Reload card balance." @(isDisabled ? "disabled" : "")>Reload</button>
+              </td>
+            </tr>
+        }
+      </tbody>
+</table>
+</div>
+<div id="transactionModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Transactions</h5>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <table id="tblTransactions" class="table table-hover">
+                <thead class="custom-thead">
+                    <tr>
+                      <th scope="col">Card#</th>
+                      <th scope="col">Remaining Balance</th>
+                      <th scope="col">Transaction Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="cardDetailsModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Card Details</h5>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+            <table id="tblCardDetails" class="table table-hover">
+                <thead class="custom-thead">
+                    <tr>
+                      <th scope="col">Card#</th>
+                      <th scope="col">Remaining Balance</th>
+                      <th scope="col">ID Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="cardUseModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Use your card<div id="curBal">Balance:</div></h5>
+      </div>
+      <div class="modal-body">
+        <div class="container">
+            <div class="use-form">
+                <input id="hdnCardId" hidden/>
+                <input id="hdnCardType" hidden/>
+                <div class="row">
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label" for="ddlStationFrom" >From</label>
+                        <select id="ddlStationFrom" class="form-control">
+                            <option value="0">
+                                -- Select --
+                            </option>
+                            <option value="1">
+                                Station 1
+                            </option>
+                            <option value="2">
+                                Station 2
+                            </option>
+                            <option value="3">
+                                Station 3
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label" for="ddlStationTo" >To</label>
+                        <select id="ddlStationTo" class="form-control">
+                            <option value="0">
+                                -- Select --
+                            </option>
+                            <option value="1">
+                                Station 1
+                            </option>
+                            <option value="2">
+                                Station 2
+                            </option>
+                            <option value="3">
+                                Station 3
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btnUse" type="button" class="btn btn-primary" >Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="cardReloadModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Reload your card <br /><div id="remBal">Balance:</div></h5>
+      </div>
+      <div class="modal-body">
+        <div class="container">
+            <div class="reload-form">
+            <input id="hdnCardIdReload" hidden/>
+            <div class="row">
+                <div class="mb-3 col-lg-6">
+                    <label class="form-label" for="txtCash" >Cash</label>
+                    <input id="txtCash" class="form-control" maxlength=5 type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');"/>
+                </div>
+                <div class="mb-3 col-lg-6">
+                    <label class="form-label" for="txtToLoad" >Amount to load</label>
+                    <input id="txtToLoad" class="form-control" maxlength=5 type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');"/>
+                </div>
+                <div class="mb-3 change-container">
+                    <label id="txtChangeLabel" class="form-label" for="txtChange" >Change</label>
+                    <p id="txtChange" >0</p>
+                </div>
+            </div>
+        </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="btnReload" type="button" class="btn btn-primary" >Save</button>
+      </div>
+    </div>
+  </div>
+</div>

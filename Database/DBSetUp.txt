@@ -1,0 +1,9 @@
+1. To generate the database, open visual studio's SQL Server Object Explorer. Please create a database named QLessTransportDB under SQL Server > (localdb)\MSSQLLocalDB.
+
+2. Once you have created the database, right click on Databases and click on "Publish Data-tier Application".
+
+3. On the "File on disk" input, click on Browse and select the .dacpac file that I have included in the solution folder.
+
+4. On the "Target database connection" input, click on Edit, then locate the new QLessTransportDB that you have just created.
+
+5. Click on "Publish". Then if there is a prompt, just click "Yes".
